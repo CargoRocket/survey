@@ -2,153 +2,332 @@
 
 ## Preprocessing
 
-```{r message = FALSE}
+```{r message = FALSE, echo = F}
 library(readr)
+library(here)
+library(tidyr)
+library(stringr)
 library(dplyr)
-library(sjmisc)
 library(sjlabelled)
+library(janitor)
+library(ggplot2)
+library(ggcharts)
+
+cr_orange <- "#E76F51"
+cr_green <- "#479E8F"
+cr_orange_light <- "#F1A261"
+grey <- "#d0d3d4"
+yellow <- "#f4d03f"
 ```
 
-### Datensatz anonymisieren
+## Datensatz anonymisieren & aufbereiten
 
-Daten einlesen, E-Mail Adressen, Datum und IP Adresse löschen. Anonymisierten Datensatz speichern und ursprünglichen Datensatz löschen.
+- Daten einlesen, E-Mail Adressen, Datum und IP Adresse löschen. Anonymisierten Datensatz speichern und ursprünglichen Datensatz löschen.
+- Umbenennen von Variablennamen und aufbereiten der Daten.
 
-```{r message = FALSE, eval=FALSE, echo=FALSE}
-data <- read_csv(file.path("data", "responses.csv"))
-data <- data[, 3:45]
-write_csv(data, file.path("data", "data_raw.csv"))
-data <- read_csv(file.path("data", "data_raw.csv"))
-unlink(file.path("data", "responses.csv"))
+
+```{r message = F, echo=F, include=F}
+source(here("R", "preprocessing.R"))
 ```
-
-### Datensatz aufbereiten
-
-Umbenennen von Variablennamen und aufbereiten der Daten.
-
-```{r warning = FALSE, message = FALSE, echo =FALSE}
-data_raw <- read_csv(file.path("data", "data_raw.csv"))
-
-set_label(data_raw) <- colnames(data_raw)
-
-data <- data_raw %>% 
-  rename("Fahrradtyp" = "Ich fahre:\n",
-         "Nutzung" = "Wofür nutzt du das Lastenfahrrad hauptsächlich?",
-         "Lastenradtyp" = "Was für ein Lastenrad nutzt du hauptsächlich?",
-         "Routing" = "Welches Routing verwendest du hauptsächlich zum (Lasten-)Fahrradfahren?",
-         "Zufriedenheit_Routing" = "Wie zufrieden bist du mit dem Routing?",
-         "Stadt" = "In welcher Stadt fährst du hauptsächlich (Lasten-)Fahrrad?",
-         "Haeufigkeit_Nutzung" = "Nutzt du das (Lasten-)Fahrrad regelmäßig in deinem Alltag oder unregelmäßig für einzelne Gelegenheiten?",
-         "Haeufigkeit_unbekannte_Routen" = "Wie häufig fährst du dir bisher unbekannte Routen mit dem (Lasten-)Fahrrad?",
-         "Eantrieb" = "Hat dein (Lasten-)Fahrrad einen Elektro-Antrieb?",
-         "Zufriedenheit_Infrastruktur" = "Wie zufrieden bist du insgesamt mit der Fahrradinfrastruktur in dem Gebiet, in dem du alltäglich fährst?",
-         "Umweg_Stau_Autoverkehr" = "nicht / kaum passierbarer Stau durch Autoverkehr",
-         "Umweg_schmaler_Radweg" = "schmale Radwege (< 1,5 m)",
-         "Umweg_Kopfsteinpflaster" = "Kopfsteinplaster",
-         "Umweg_unebener_Belag" = "unebener Straßenbelag (z.B. durch Wurzeln und Schlaglöcher)",
-         "Umweg_Bordsteine" = "Bordsteine",
-         "Umweg_Poller" = "Poller / Drängelgitter",
-         "Umweg_Fussverkehr" = "Fußverkehr (z.B. geteilter Fuß- und Radweg)",
-         "Umweg_Baustellen" = "Baustellen auf der Fahrbahn",
-         "Umweg_Steigung" = "Steigung", 
-         "Umweg_Kreuzung" = "Gefährliche Kreuzungen",
-         "Umweg_kein_Schutzstreifen" = "Hauptstraßen ohne Schutzstreifen (dichtes, schnelles Überholen / Drängeln)",
-         "Umweg_Gegenverkehr" = "schlecht passierbarer Gegenverkehr (z.B. Einbahnstraßen frei für Fahrräder)",
-         "Umweg_Fussgaengerzone" = "Fußgängerzone: Radfahrende müssen absteigen",
-         "Freq_Stau_Autoverkehr" = "nicht / kaum passierbarer Stau durch Autoverkehr_1",
-         "Freq_schmaler_Radweg" = "schmale Radwege (< 1,5 m)_1",
-         "Freq_Kopfsteinplaster" = "Kopfsteinplaster_1",
-         "Freq_unebener_Belag" = "unebener Straßenbelag (z.B. durch Wurzeln und Schlaglöcher)_1",
-         "Freq_Bordsteine" = "Bordsteine_1",
-         "Freq_Poller" = "Poller / Drängelgitter_1",
-         "Freq_Fussverkehr" = "Fußverkehr (z.B. geteilter Fuß- und Radweg)_1",
-         "Freq_Baustellen" = "Baustellen auf der Fahrbahn_1",
-         "Freq_Steigung" = "Steigung_1", 
-         "Freq_Kreuzung" = "gefährliche Kreuzungen",
-         "Freq_kein_Schutzstreifen" = "Hauptstraßen ohne Schutzstreifen (dichtes, schnelles Überholen / Drängeln)_1",
-         "Freq_Gegenverkehr" = "schlecht passierbarer Gegenverkehr (z.B. Einbahnstraßen frei für Fahrräder)_1",
-         "Freq_Fussgaengerzone" = "Fußgängerzone: Radfahrende müssen absteigen_1",
-         "sonstige_Hindernisse" = "Gibt es sonstige Probleme oder Hindernisse beim (Lasten-)Radfahren, die hier nicht berücksichtigt wurden?",
-         "Geschlecht" = "Dein Geschlecht",
-         "Alter" = "Dein Alter",
-         "Beta-Test" = "Möchtest du dich als Beta-Tester\\*in für unser Lastenrad-Routing eintragen?") %>% 
-  mutate(Nutzung = coalesce(Nutzung, Other), .after = "Other") %>%
-  mutate(Typ_all = coalesce(Lastenradtyp, Other_1, Fahrradtyp), .after = "Fahrradtyp") %>% 
-  mutate(Routing = coalesce(Routing, Other_2)) %>% 
-  select(-Other, -Other_1, -Other_2, -Fahrradtyp, -Lastenradtyp)
-
-recode_umweg <- function(x) {
-  return(recode(x, 
-       "0 min" = "0", 
-       "2 min" = "2",
-       "4 min" = "4",
-       "6 min" = "6",
-       "8 min" = "8",
-       "10 min oder mehr" = "10"))
-}
-
-data$Umweg_Stau_Autoverkehr <- recode_umweg(data$Umweg_Stau_Autoverkehr) %>% as.numeric()
-data$Umweg_schmaler_Radweg <- recode_umweg(data$Umweg_schmaler_Radweg)%>% as.numeric()
-data$Umweg_Kopfsteinpflaster <- recode_umweg(data$Umweg_Kopfsteinpflaster)%>% as.numeric()
-data$Umweg_unebener_Belag <- recode_umweg(data$Umweg_unebener_Belag)%>% as.numeric()
-data$Umweg_Bordsteine <- recode_umweg(data$Umweg_Bordsteine)%>% as.numeric()
-data$Umweg_Poller <- recode_umweg(data$Umweg_Poller)%>% as.numeric()
-data$Umweg_Fussverkehr <- recode_umweg(data$Umweg_Fussverkehr)%>% as.numeric()
-data$Umweg_Baustellen <- recode_umweg(data$Umweg_Baustellen)%>% as.numeric()
-data$Umweg_Steigung <- recode_umweg(data$Umweg_Steigung)%>% as.numeric()
-data$Umweg_Kreuzung <- recode_umweg(data$Umweg_Kreuzung)%>% as.numeric()
-data$Umweg_kein_Schutzstreifen <- recode_umweg(data$Umweg_kein_Schutzstreifen)%>% as.numeric()
-data$Umweg_Gegenverkehr <- recode_umweg(data$Umweg_Gegenverkehr)%>% as.numeric()
-data$Umweg_Fussgaengerzone <- recode_umweg(data$Umweg_Fussgaengerzone)%>% as.numeric()
-```
-
 
 ## Analyse
 
+Im folgenden wird die Umfrage zu Hindernissen für Lastenräder im Stadtverkehr ausgewertet. Die Fragen und Antwortmöglichkeiten stehen hier xxx .
+
 ### Stichprobe
 
-```{r}
-data[ ,c("Geschlecht", "Typ_all", "Eantrieb", "Nutzung", "Stadt", "Routing")] %>% frq()
+Es haben x Personen an der Umfrage teilgenommen (68% männlich, 28% weiblich, <1% nicht-binär, 3% keine Angabe).
+Im Mittel waren die Befragten 39 Jahre alt (38 im Median), in einer Range von 20 bis 68 Jahren.
 
-```
-
-```{r}
-
-data[, c("Haeufigkeit_Nutzung", "Haeufigkeit_unbekannte_Routen", "Zufriedenheit_Infrastruktur", "Zufriedenheit_Routing")] %>% summary()
-
-```
-
-Nutzung nach Geschlecht
-
-```{r}
+```{r, echo = F}
 data %>% 
-  select(Geschlecht, Nutzung) %>% 
-  filter(Geschlecht == "weiblich" | Geschlecht == "männlich") %>% 
-  group_by(Geschlecht) %>% 
-  frq()
+  bar_chart(Geschlecht, bar_color = cr_orange) +
+    theme_grey(base_size = 12)
 ```
 
+```{r, echo = F}
+  hist(data$Alter, main = "Histogram Alter", xlab = "Alter", ylab = "Häufigkeit")
+```
+
+**Stadt**
+
+```{r, echo = F}
+data %>% 
+  bar_chart(Stadt, bar_color = cr_orange) +
+  theme_grey()
+```
+
+
+**Fahrradtyp**
+
+75% der Befragten sind Lastenradfahrer*innen und 25% fahren normales Fahrrad. Der einspurige Frontloader ist in dieser Stichprobe das häufigste Lastenrad (65%, n = 135), danach folgt der mehrspurige Frontloader (22%, n = 46), Schwerlast (5%, n = 12), Longtail (3%, n = 6) und Anhänger (2%, n = 6) und Post bike (2%, n = 2).
+
+
+```{r, echo = F, message = F}
+data %>% 
+  tabyl(Fahrradtyp) %>% 
+  adorn_pct_formatting()
+```
+
+
+```{r, echo = F, message = F}
+data %>% 
+  filter(Typ_all != "Fahrrad") %>% 
+  tabyl(Typ_all) %>% 
+  #mutate(percent = round(percent, 3) * 100) %>% 
+  bar_chart(Typ_all, y = n, other = T, threshold = 1, bar_color = cr_orange) +
+  geom_text(aes(label = n, hjust = -0.1)) +
+  xlab("Fahrrad-Typ") +
+  ylab("Anzahl") +
+  scale_y_continuous(limits = c(0, 140)) +
+  theme_grey(base_size = 12)
+
+```
+
+Während 60% der Frauen das Lastenrad hauptsächlich zum Transport von Kindern nutzen, verteilt es sich bei Männern zu 44% auf gewerbliche Nutzung, 33% Transport von Gegenständen und 25% Transport von Kindern.
+
+```{r, echo = F}
+# Absolute Zahlen
+nutzung_geschlecht <- data %>% 
+  filter(Typ_all != "Fahrrad") %>% 
+  filter(Geschlecht %in% c("männlich", "weiblich")) %>% 
+  tabyl(Nutzung, Geschlecht) %>% 
+  filter(männlich + weiblich > 5)
+
+nutzung_geschlecht
+```
+
+```{r, echo = F}
+# Prozent je Geschlecht
+nutzung_geschlecht %>% 
+  adorn_percentages() %>%
+  adorn_percentages(denominator = "col") %>% 
+  adorn_pct_formatting() 
+```
+
+**Häufigkeit unebkannter Routen & Routing**
+
+```{r, echo = F, eval = F}
+data %>% 
+  group_by(Nutzung) %>% 
+  summarize(mean(Haeufigkeit_unbekannte_Routen), median(Haeufigkeit_unbekannte_Routen))
+```
+
+
+```{r, echo = F}
+data %>% 
+  filter(!is.na(Nutzung)) %>% 
+  bar_chart(Haeufigkeit_unbekannte_Routen, sort = F, 
+            bar_color = cr_orange, horizontal = F, facet = Nutzung) + 
+  labs(title = get_label(data$Haeufigkeit_unbekannte_Routen),
+       subtitle = "1:sehr selten - 6: sehr häufig") +
+  xlab("") +
+  scale_x_continuous(breaks = c(1,2,3, 4, 5, 6),
+                     limits = c(0.5,6.5))+
+    theme_grey(base_size = 8)
+```
+
+**Zufriedenheit Infrastruktur**
+
+Auf einer Skala von 1 (sehr unzufrieden) - 6 (sehr zufrieden) ist die Zufriedenheit im Schnitt bei 2.5. Niemand der Befragten ist "sehr zufrieden".
+
+```{r, echo = F}
+data$Zufriedenheit_Infrastruktur %>% summary()
+```
+
+```{r, echo = F}
+data %>% 
+  bar_chart(Zufriedenheit_Infrastruktur, sort = F, 
+            bar_color = cr_orange, horizontal = F) + 
+  labs(title = get_label(data$Zufriedenheit_Infrastruktur),
+       subtitle = "1:sehr unzufrieden - 6: sehr zufrieden") +
+  xlab("Zufriedenheit") +
+  scale_x_continuous(breaks = c(1,2,3, 4, 5, 6),
+                     limits = c(0.5,6.5)) +
+    theme_grey(base_size = 8)
+
+```
+
+
+```{r, echo = F}
+data %>% 
+  group_by(Stadt) %>% 
+  summarise(Zufriedenheit = mean(Zufriedenheit_Infrastruktur)) %>% 
+  bar_chart(Stadt, Zufriedenheit, bar_color = cr_orange) +
+    scale_y_continuous(limits = c(0,6.5)) +
+      theme_grey(base_size = 8)
+
+```
+
+
+**Routing**
+
+```{r, echo = F}
+data %>% 
+  bar_chart(Routing, threshold = 3, bar_color = cr_orange, facet = Nutzung) +
+    theme_grey(base_size = 8)
+```
+
+```{r, echo = F}
+data$Zufriedenheit_Routing %>% summary()
+```
+
+
+```{r, echo = F}
+data %>% 
+  filter(Routing %in% c("Google Maps", "Komoot", "OpenStreetMap", "Bike Citizens")) %>% 
+  bar_chart(Zufriedenheit_Routing, sort = F, 
+            bar_color = cr_orange, horizontal = F, facet = Routing) + 
+  labs(title = get_label(data$Zufriedenheit_Routing),
+       subtitle = "1:sehr unzufrieden - 6: sehr zufrieden") +
+  xlab("Zufriedenheit") +
+  scale_x_continuous(breaks = c(1, 2 ,3, 4, 5, 6),
+                     limits = c(0.5,6.5)) +
+    theme_grey(base_size = 12)
+```
 
 ### Bereitschaft für Umwege
-
 ```{r}
+umwege_mean <- data[ , grepl( "Umweg_" , names( data ) )] %>% 
+  summarise(across(everything(), mean)) %>% 
+  tibble::rownames_to_column() %>%  
+  pivot_longer(-rowname) %>% 
+  pivot_wider(names_from=rowname, values_from=value) %>% 
+  rename(mean = "1")
+```
+
+```{r, echo=F,eval = F}
+umwege_median <- data[ , grepl( "Umweg_" , names( data ) )] %>% 
+  summarise(across(everything(), median)) %>% 
+  tibble::rownames_to_column() %>%  
+  pivot_longer(-rowname) %>% 
+  pivot_wider(names_from=rowname, values_from=value) %>% 
+  rename(median = "1")
+
+umwege_sd <- data[ , grepl( "Umweg_" , names( data ) )] %>% 
+  summarise(across(everything(), sd)) %>% 
+  tibble::rownames_to_column() %>%  
+  pivot_longer(-rowname) %>% 
+  pivot_wider(names_from=rowname, values_from=value) %>% 
+  rename(sd = "1")
+
+umwege_mean %>% 
+  cbind(umwege_sd$sd) %>% 
+  cbind(umwege_median$median)
+
+```
+
+
+```{r, echo = F}
+umwege_mean %>% 
+  bar_chart(name, mean, bar_color  = cr_orange) +
+  ylab("Bereitschaft für Umwege in Minuten") +
+  xlab("") +
+  theme_grey(base_size = 12)
+```
+
+```{r, echo = F, warning=F, message = F}
+# umwege_mean_typ <- data[ , grepl( "Umweg_" , names( data ) ) | (names(data) == "Typ_all")] %>% 
+#   filter(! Typ_all %in% c("filibus", "ONO Pioneers Edition", "Longtail (einspurig)",
+#                           "Zu gleichen Teilen A und F", "Post bike (einspurig)")) %>% 
+#   group_by(Typ_all) %>% 
+#   summarise(across(everything(), mean)) %>% 
+#   pivot_longer(-Typ_all) %>% 
+#   pivot_wider(names_from=Typ_all, values_from=value)
+
+umwege_mean_typ <- data[ , grepl( "Umweg_" , names( data ) ) | (names(data) == "Typ_all")] %>% 
+  filter(! Typ_all %in% c("Longtail (einspurig)", "Post bike (einspurig)")) %>% # not enough answers
+  group_by(Typ_all) %>% 
+  summarise(across(everything(), mean)) %>%
+  pivot_longer(-Typ_all)
+
+sorted_umwege_order <- arrange(umwege_mean, desc(mean)) %>% pull(name)
+
+for(umweg in sorted_umwege_order) {
+  plot(bar_chart(filter(umwege_mean_typ, name == umweg), Typ_all, value,
+          bar_color = c(cr_orange, grey, cr_green,  yellow, cr_orange_light)) +
+         labs(subtitle = get_label(data[,umweg])) +
+         xlab("") +
+         ylab("durchschnittliche Bereitschaft für Umweg in Minuten") +
+         scale_y_continuous(limits = c(0,7.5)) +
+        theme_grey(base_size = 12)
+  )
+}
+```
+
+```{r, echo = F, eval = F}
 data[ , grepl( "Umweg_" , names( data ) ) ] %>%  summary()
 ```
-Umwege nach Fahrradtyp
 
-```{r}
-data[ , grepl( "Umweg_" , names( data ) ) | names(data) == "Typ_all" ] %>% 
-  group_by(Typ_all) %>% summarise(across(everything(), mean))
+**Umwege nach Nutzung**
+
+```{r, echo = F,  message = F, warning = F}
+umwege_mean_nutzung <- data[ , grepl( "Umweg_" , names( data ) ) | (names(data) == "Nutzung")] %>% 
+  filter(!is.na(Nutzung)) %>% 
+  group_by(Nutzung) %>% 
+  summarise(across(everything(), mean)) %>%
+  pivot_longer(-Nutzung)
+
+sorted_nutzung_order <- arrange(umwege_mean, desc(mean)) %>% pull(name)
+
+for(umweg in sorted_umwege_order) {
+  plot(bar_chart(filter(umwege_mean_nutzung, name == umweg), Nutzung, value,
+          bar_color = c(cr_orange, cr_green, cr_orange_light), horizontal = T) +
+         labs(subtitle = get_label(data[,umweg])) +
+         xlab("") +
+         ylab("durchschnittliche Bereitschaft für Umweg in Minuten") +
+         scale_y_continuous(limits = c(0,7.5)) +
+        theme_grey(base_size = 10)
+  )
+}
 ```
-Umwege nach Nutzung
 
-```{r}
-data[ (data$Nutzung == "gewerbliche Nutzung  (z.B. Lieferdienst)" | data$Nutzung == "Transport von Kindern" | data$Nutzung == "privater Transport von Einkäufen / Gegenständen / Haustieren"), grepl( "Umweg_" , names( data ) ) | names(data) == "Nutzung" ] %>% 
-  group_by(Nutzung) %>% summarise(across(everything(), mean))
+
+**Umweg für Steigung mit und ohne E-Antrieb**
+
+```{r, echo = F, message = F}
+data %>% 
+  mutate(Eantrieb = ifelse(Eantrieb == 0, "nein", "ja")) %>% 
+  group_by(Fahrradtyp, Eantrieb) %>% 
+  summarize("durchschnittlicher Umweg in Minuten" = mean(Umweg_Steigung), Anzahl = n()) 
 ```
 
-Umweg für Steigung mit und ohne E-Antrieb
+**Häufigkeit von Hindernissen**
 
-```{r}
-data[ , grepl( "Umweg_Steigung" , names( data ) ) | names(data) == "Eantrieb" ] %>% 
-  group_by(Eantrieb) %>% summarise(across(everything(), mean))
+```{r, echo = F}
+freq_mean <- data[ , grepl( "Freq_" , names( data ) )] %>% 
+  summarise(across(everything(), mean)) %>% 
+  tibble::rownames_to_column() %>%  
+  pivot_longer(-rowname) %>% 
+  pivot_wider(names_from=rowname, values_from=value) %>% 
+  rename(mean = "1")
+
+freq_mean %>% 
+  bar_chart(name, mean, bar_color  = cr_orange) +
+  ylab("Häufigkeit der Hindernisse") +
+  xlab("") +
+  theme_grey(base_size = 12)
 ```
+
+```{r, echo = F, message = F}
+freq_mean_stadt <- data[ , grepl( "Freq" , names( data ) ) | (names(data) == "Stadt")] %>% 
+  filter(Stadt != "Sonstige") %>% 
+  group_by(Stadt) %>% 
+  summarise(across(everything(), mean)) %>%
+  pivot_longer(-Stadt)
+
+sorted_freq_order <- unique(arrange(freq_mean_stadt, desc(value)) %>% pull(name))
+
+for(freq in sorted_freq_order) {
+  plot(bar_chart(filter(freq_mean_stadt, name == freq), Stadt, value, horizontal = T,
+                           bar_color = c(rep(grey, 9), cr_orange, rep(grey, 1) ))+
+         labs(title = get_label(data[,freq]),
+              subtitle = "von 1: sehr selten bis 5 sehr häufig") +
+         xlab("") +
+         ylab("Häufigkeit") +
+         scale_y_continuous(limits = c(0,5.5)) +
+        theme_grey(base_size = 10)
+  )
+}
+```
+
