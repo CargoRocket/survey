@@ -1,8 +1,27 @@
 # Auswertung der Umfrage zu Hindernissen im Straßenverkehr für Lastenräder
 
-## Preprocessing
+Vom 8.März - 21. März 2021 haben wir in einer Online-Befragung Lastenrad- und Fahrradfahrer\*innen nach Hindernissen im Straßenverkehr gefragt. Für welche Hindernisse würden große Umwege in Kauf genommen werden und wie häufig kommen diese Hindernisse in der eigenen Stadt vor?
+
+Der Fragebogen mit Fragen und Antwortmöglichkeiten kann [hier](TODO) eingesehen werden.
+
+Hier werden nun die Ergebnisse evaluiert.
+
+## tl;dr: die Zusammenfassung
+
+- 277 (28% weiblich) Personen im Schnitt von 39 Jahren haben den Fragebogen ausgefüllt, davon 75% für Lastenradräder und 25% für Fahrräder.
+- Lastenfahrende sind im Schnitt zu größeren Umwegen bereits als Fahrradfahrende
+- Alle Fahrradtypen sind insbesondere bereit Umwege in Kauf zu nehmen, um Auto- und Fußverkehr zu umfahren
+- Je nach Nutzungstyp lässt sich zusätzlich unterscheiden:
+  - Für Kindertransporte stehen Sicherheitsaspekte im Vordergrund: Hauptstraßen ohne Schutzstreifen und gefährliche Kreuzungen werden eher umfahren.
+  - Für gewerbliche Nutzung stehen Geschwindigkeitsaspekte wie Stau durch Autos oder schlecht passierbarer Fußverkehr im Vordergrund.
+- Für verschiedene Lastenradmodelle sind unterschiedliche Hindernisse problematisch
+  - für breite Schwerlasträder sind Poller problematisch und Umfahren eher Steigung
+  - Mehrspurige Lastenräder haben mit Bordsteinen größere Probleme 
+  - Mehrspurige Frontloader umfahren eher unebene Straßen und Kopfsteinplaster als andere Fahrradtypen
+  
 
 ```{r message = FALSE, echo = F}
+# imports
 library(readr)
 library(here)
 library(tidyr)
@@ -13,6 +32,7 @@ library(janitor)
 library(ggplot2)
 library(ggcharts)
 
+# colors
 cr_orange <- "#E76F51"
 cr_green <- "#479E8F"
 cr_orange_light <- "#F1A261"
@@ -20,40 +40,38 @@ grey <- "#d0d3d4"
 yellow <- "#f4d03f"
 ```
 
-## Datensatz anonymisieren & aufbereiten
-
-- Daten einlesen, E-Mail Adressen, Datum und IP Adresse löschen. Anonymisierten Datensatz speichern und ursprünglichen Datensatz löschen.
-- Umbenennen von Variablennamen und aufbereiten der Daten.
-
-
 ```{r message = F, echo=F, include=F}
+## Datensatz anonymisieren & aufbereiten
 source(here("R", "preprocessing.R"))
 ```
 
-## Analyse
+## Detaillierte Analyse
 
-Im folgenden wird die Umfrage zu Hindernissen für Lastenräder im Stadtverkehr ausgewertet. Die Fragen und Antwortmöglichkeiten stehen hier xxx .
+Die Auswertung der Fragen im Detail:
 
 ### Stichprobe
 
 Es haben x Personen an der Umfrage teilgenommen (68% männlich, 28% weiblich, <1% nicht-binär, 3% keine Angabe).
 Im Mittel waren die Befragten 39 Jahre alt (38 im Median), in einer Range von 20 bis 68 Jahren.
 
-```{r, echo = F}
+```{r, echo = F, message = F}
 data %>% 
   bar_chart(Geschlecht, bar_color = cr_orange) +
     theme_grey(base_size = 12)
 ```
 
-```{r, echo = F}
-  hist(data$Alter, main = "Histogram Alter", xlab = "Alter", ylab = "Häufigkeit")
+```{r, echo = F, message = F}
+  hist(data$Alter, main = "Histogram Alter", xlab = "Alter", ylab = "Häufigkeit", border = "white")
 ```
 
 **Stadt**
 
-```{r, echo = F}
+Die meisten Befragten stammen aus Berlin (131). Danach folgen Münster (18), Hamburg (15) und Stuttgart (11). Mindestens 5 Antworten kamen auch aus München, Kiel, Frankfurt a.M., Düsseldorf, Wien, Osnabrück und Bonn. 131 weitere Antworten stammen aus Orten mit weniger als 5 Angaben oder haben keine Angabe gemacht.
+
+```{r, echo = F, message = F}
 data %>% 
   bar_chart(Stadt, bar_color = cr_orange) +
+  geom_text(aes(label = n, hjust = -0.1)) +
   theme_grey()
 ```
 
@@ -84,9 +102,21 @@ data %>%
 
 ```
 
+
+Wie zu erwarten werden Schwerlasträder hauptsächlich in der gewerblichen Nutzung eingesetzt. Die Mehrspurigen Frontloader dienen zum Großteil (61%) dem Transport von Kindern während die einspurigen zwar auch für 42% für Kindertransport, aber häufiger (55%) für den Transport von Gegenständen oder für gewerbliche Nutzung zum Einsatz kommen.
+
+```{r, echo = F, message = F}
+# Absolute Zahlen
+data %>% 
+  filter(Typ_all != "Fahrrad") %>% 
+  tabyl(Nutzung, Typ_all) %>% 
+  adorn_percentages(denominator="col") %>% 
+  adorn_pct_formatting()
+```
+
 Während 60% der Frauen das Lastenrad hauptsächlich zum Transport von Kindern nutzen, verteilt es sich bei Männern zu 44% auf gewerbliche Nutzung, 33% Transport von Gegenständen und 25% Transport von Kindern.
 
-```{r, echo = F}
+```{r, echo = F, message = F}
 # Absolute Zahlen
 nutzung_geschlecht <- data %>% 
   filter(Typ_all != "Fahrrad") %>% 
@@ -97,7 +127,7 @@ nutzung_geschlecht <- data %>%
 nutzung_geschlecht
 ```
 
-```{r, echo = F}
+```{r, echo = F, message = F}
 # Prozent je Geschlecht
 nutzung_geschlecht %>% 
   adorn_percentages() %>%
@@ -105,37 +135,48 @@ nutzung_geschlecht %>%
   adorn_pct_formatting() 
 ```
 
-**Häufigkeit unebkannter Routen & Routing**
+**Häufigkeit unbekannter Routen & Routing**
 
-```{r, echo = F, eval = F}
+Wie erwartet werden für gewerbliche Nutzung deutlich häufiger unbekannte Routen gefahren: 38% der Fahrer\*innen geben (sehr) häufig unkeannte Routen zu fahren (5 oder 6 auf der Skala). Bei privatem Transport von Gegenständen sind dies nur 18% und bei Transport von Kindern 10%. 
+2 Personen - damit 12% der gewerblich Fahrenden - geben auch an nur sehr selten (1 auf der Skala) unbekannte Routen zu fahren. In der privaten Nutzung sind dies nur 5% bzw. 0%. 
+
+```{r, echo = F, eval = F, message = F}
 data %>% 
   group_by(Nutzung) %>% 
-  summarize(mean(Haeufigkeit_unbekannte_Routen), median(Haeufigkeit_unbekannte_Routen))
+  summarize("Mittelwert unbekannte Routen" = mean(Haeufigkeit_unbekannte_Routen), Median = median(Haeufigkeit_unbekannte_Routen))
 ```
 
 
-```{r, echo = F}
-data %>% 
+```{r, echo = F, message = F}
+data %>%
   filter(!is.na(Nutzung)) %>% 
-  bar_chart(Haeufigkeit_unbekannte_Routen, sort = F, 
-            bar_color = cr_orange, horizontal = F, facet = Nutzung) + 
+  group_by(Nutzung) %>% 
+  tabyl(Haeufigkeit_unbekannte_Routen, 
+        Nutzung) %>% 
+  adorn_percentages("col") %>% 
+  pivot_longer(cols = c(`gewerbliche Nutzung`, `privater Transport Gegenstände`, `Transport von Kindern`)) %>% 
+  mutate(percentage = round(value * 100, 1)) %>% 
+  bar_chart(Haeufigkeit_unbekannte_Routen, percentage, sort = F, 
+            bar_color = cr_orange, horizontal = F, facet = name) + 
   labs(title = get_label(data$Haeufigkeit_unbekannte_Routen),
        subtitle = "1:sehr selten - 6: sehr häufig") +
-  xlab("") +
   scale_x_continuous(breaks = c(1,2,3, 4, 5, 6),
-                     limits = c(0.5,6.5))+
+                     limits = c(0.5,6.5)) +
+  xlab("") +
+  ylab("%")+
     theme_grey(base_size = 8)
 ```
 
 **Zufriedenheit Infrastruktur**
 
 Auf einer Skala von 1 (sehr unzufrieden) - 6 (sehr zufrieden) ist die Zufriedenheit im Schnitt bei 2.5. Niemand der Befragten ist "sehr zufrieden".
+Die Befragten in München sind am zufriedensten, Stuttgart landet auf dem vorletzten Platz. **Diese Vergleiche sind jedoch nur bedingt aussagekräftig, da für die meisten Städte nur sehr kleine Stichprobenzahlen (< 10) vorliegen.**
 
-```{r, echo = F}
+```{r, echo = F, message = F}
 data$Zufriedenheit_Infrastruktur %>% summary()
 ```
 
-```{r, echo = F}
+```{r, echo = F, message = F}
 data %>% 
   bar_chart(Zufriedenheit_Infrastruktur, sort = F, 
             bar_color = cr_orange, horizontal = F) + 
@@ -149,7 +190,7 @@ data %>%
 ```
 
 
-```{r, echo = F}
+```{r, echo = F, message = F}
 data %>% 
   group_by(Stadt) %>% 
   summarise(Zufriedenheit = mean(Zufriedenheit_Infrastruktur)) %>% 
@@ -162,32 +203,77 @@ data %>%
 
 **Routing**
 
-```{r, echo = F}
+Fast 30% der Befragten nutzt Google Maps als Routing. An zweiter Stelle steht Komoot mit 21% und OpenStreetMap mit 9% auf Platz 3. 
+27% verwenden gar kein Routing. 
+Weitere mehrfach genannte Dienste sind Bikemap, Brouter, OsmAnd+, bbike.de und Naviki.
+
+Während in der gewerblichen Nutzung über 50% Google Maps verwenden, nutzt ein Drittel der Befragten die privat Lastenrad fahren gar kein Routing.
+
+```{r, echo = F, eval = F, message = F}
 data %>% 
-  bar_chart(Routing, threshold = 3, bar_color = cr_orange, facet = Nutzung) +
+  tabyl(Routing) %>% 
+  arrange(desc(n)) %>% 
+  adorn_pct_formatting()
+```
+
+
+```{r, echo = F, message = F}
+data %>% 
+  bar_chart(Routing, threshold = 4, bar_color = cr_orange) +
+    theme_grey(base_size = 12) +
+    geom_text(aes(label = n, hjust = -0.1))
+```
+
+```{r, echo = F, message = F}
+data %>%
+  filter(!is.na(Nutzung)) %>% 
+  mutate(Routing = ifelse(Routing %in% c("Google Maps", "Ich Nutze Kein Routing", "Komoot", "Openstreetmap", "Bike Citizens"), Routing, "Sonstiges")) %>% 
+  group_by(Nutzung) %>% 
+  tabyl(Routing, 
+        Nutzung) %>% 
+  adorn_percentages("col") %>% 
+  pivot_longer(-Routing) %>% 
+  mutate(percentage = round(value * 100)) %>% 
+  bar_chart(Routing, percentage, threshold = 5,
+            bar_color = cr_orange, horizontal = T, facet = name) + 
+  labs(title = get_label(data$Routing),
+       subtitle = "Unterschieden nach Hauptnutzung, in %") +
+  scale_y_continuous(limits = c(0,65)) +
+  geom_text(aes(label = percentage, hjust = -0.1)) +
+  xlab("") +
+  ylab("%")+
     theme_grey(base_size = 8)
 ```
 
-```{r, echo = F}
+Die Zufriedenheit mit den verschiedenen Routing Services ist im Mittel bei 3.5 und liegt damit genau in der Mittel zwischen unzufrieden und zufrieden.
+Während die Zufriedenheit mit Google Maps am geringsten ist, scheinen kleinere Anbieter (zusammengefasst unter "Sonstiges") am besten abzuschneiden.
+
+```{r, echo = F, message = F}
 data$Zufriedenheit_Routing %>% summary()
 ```
 
-
-```{r, echo = F}
+```{r, echo = F, message = F}
 data %>% 
-  filter(Routing %in% c("Google Maps", "Komoot", "OpenStreetMap", "Bike Citizens")) %>% 
-  bar_chart(Zufriedenheit_Routing, sort = F, 
-            bar_color = cr_orange, horizontal = F, facet = Routing) + 
-  labs(title = get_label(data$Zufriedenheit_Routing),
+  filter(!is.na(Zufriedenheit_Routing)) %>% 
+  mutate(Routing = ifelse(Routing %in% c("Google Maps", "Ich Nutze Kein Routing", "Komoot", "Openstreetmap", "Bike Citizens"), Routing, "Sonstiges")) %>% 
+  group_by(Routing) %>% 
+  summarize("Mittelwert Zufriedenheit Routing" = mean(Zufriedenheit_Routing)) %>% 
+  bar_chart(Routing, `Mittelwert Zufriedenheit Routing`, bar_color = cr_orange)+
+    labs(title = get_label(data$Zufriedenheit_Routing),
        subtitle = "1:sehr unzufrieden - 6: sehr zufrieden") +
-  xlab("Zufriedenheit") +
-  scale_x_continuous(breaks = c(1, 2 ,3, 4, 5, 6),
-                     limits = c(0.5,6.5)) +
+    xlab("Zufriedenheit") +
+    scale_y_continuous(limits = c(1,6), oob = scales::squish, breaks = c(1,2,3,4,5,6)) +
     theme_grey(base_size = 12)
 ```
 
 ### Bereitschaft für Umwege
-```{r}
+
+Insgesamt scheint die Bereitschaft Umwege in Kauf zu nehmen vor allem gegeben, um Autos und Fußgängern auszuweichen. So landen auf den ersten vier Plätzen:
+Umwege in Fußgängerzonen (Absteigen notwendig), Hauptstraßen ohne Schutzstreifen, Stau durch Autoverkehr und geteilter Weg mit FUßgänger\*innen.
+
+Je nach Fahrradtyp und Nutzungsart unterscheidet sich diese Einschätzung jedoch.
+
+```{r, echo = F, message = F}
 umwege_mean <- data[ , grepl( "Umweg_" , names( data ) )] %>% 
   summarise(across(everything(), mean)) %>% 
   tibble::rownames_to_column() %>%  
@@ -196,7 +282,7 @@ umwege_mean <- data[ , grepl( "Umweg_" , names( data ) )] %>%
   rename(mean = "1")
 ```
 
-```{r, echo=F,eval = F}
+```{r, echo=F,eval = F, message = F}
 umwege_median <- data[ , grepl( "Umweg_" , names( data ) )] %>% 
   summarise(across(everything(), median)) %>% 
   tibble::rownames_to_column() %>%  
@@ -218,29 +304,57 @@ umwege_mean %>%
 ```
 
 
-```{r, echo = F}
-umwege_mean %>% 
-  bar_chart(name, mean, bar_color  = cr_orange) +
-  ylab("Bereitschaft für Umwege in Minuten") +
-  xlab("") +
-  theme_grey(base_size = 12)
+```{r, echo = F, message = F}
+# print labels
+cbind(Variablenname = umwege_mean$name, Frage = get_label(data[ , grepl( "Umweg_" , names( data ) )])) %>% 
+  as_tibble()
 ```
 
-```{r, echo = F, warning=F, message = F}
-# umwege_mean_typ <- data[ , grepl( "Umweg_" , names( data ) ) | (names(data) == "Typ_all")] %>% 
-#   filter(! Typ_all %in% c("filibus", "ONO Pioneers Edition", "Longtail (einspurig)",
-#                           "Zu gleichen Teilen A und F", "Post bike (einspurig)")) %>% 
-#   group_by(Typ_all) %>% 
-#   summarise(across(everything(), mean)) %>% 
-#   pivot_longer(-Typ_all) %>% 
-#   pivot_wider(names_from=Typ_all, values_from=value)
+**Einschätzung insgesamt**
 
+```{r, echo = F, message = F}
+umwege_mean %>% 
+  bar_chart(name, mean, bar_color  = cr_orange) +
+  labs(title = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
+  ylab("Bereitschaft für Umwege in Minuten") +
+  xlab("") +
+  theme_grey(base_size = 9)
+```
+**Unterscheidung nach Fahrradtyp**
+
+Wie erwartet sind mehrspurige Lastenräder zu den größten Umwegen bereit.
+Dann folgen Anhänger, einspurige Lastenräder. Normale Fahrräder sind zu den geringsten Umwegen bereit - jedoch unterscheiden sie sich nur minimal von den einspurigen Frontloadern.
+
+```{r, echo = F, message = F}
 umwege_mean_typ <- data[ , grepl( "Umweg_" , names( data ) ) | (names(data) == "Typ_all")] %>% 
   filter(! Typ_all %in% c("Longtail (einspurig)", "Post bike (einspurig)")) %>% # not enough answers
   group_by(Typ_all) %>% 
   summarise(across(everything(), mean)) %>%
   pivot_longer(-Typ_all)
+```
 
+```{r, echo = F, message = F}
+umwege_mean_typ %>% 
+  group_by(Typ_all) %>% 
+  summarize("Mittelwert Umwege gesamt" = mean(value)) %>% 
+  arrange(desc(`Mittelwert Umwege gesamt`))
+```
+
+Während für alle Fahrradtypen die Bereitschaft zur Umfahrung von Auto- und Fußverkehr groß ist, sind vor allem für Schwerlasträder Poller ein Problem. Der nicht vorhandene Schutzstreifen für mehrspurige Frontloader das Hindernis, das am weitesten umfahren werden würde und hängt höchstwahrscheinlich mit der starken Nutzung für Kindertransporte zusammen.
+Kopfsteinpflaster ist für Schwerlasträder überraschenderweise kaum ein Problem. Möglicherweise sind hier die Räder robuster gebaut oder besser gefedert.
+Bordsteine scheinen für die mehrspurigen Räder ebenfalls ein größeres Hindernis als für die einspurigen Räder zu sein.
+Steigung ist interessanterweise für keinen der Fahrradtypen eine große Hürde - selbst ohne Elektroantrieb. 
+
+```{r, echo = F, message = F}
+umwege_mean_typ %>% 
+  bar_chart(name, value, bar_color  = cr_orange, facet = Typ_all) +
+  labs(title = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
+  ylab("Bereitschaft für Umwege in Minuten") +
+  xlab("") +
+  theme_grey(base_size = 8)
+```
+
+```{r, echo = F, warning=F, message = F}
 sorted_umwege_order <- arrange(umwege_mean, desc(mean)) %>% pull(name)
 
 for(umweg in sorted_umwege_order) {
@@ -255,19 +369,40 @@ for(umweg in sorted_umwege_order) {
 }
 ```
 
-```{r, echo = F, eval = F}
+
+**Umweg für Steigung mit und ohne E-Antrieb**
+
+```{r, echo = F, message = F}
+data %>% 
+  mutate(Eantrieb = ifelse(Eantrieb == 0, "nein", "ja")) %>% 
+  group_by(Fahrradtyp, Eantrieb) %>% 
+  summarize("durchschnittlicher Umweg in Minuten" = mean(Umweg_Steigung), Anzahl = n()) 
+```
+
+
+```{r, echo = F, eval = F, message = F}
 data[ , grepl( "Umweg_" , names( data ) ) ] %>%  summary()
 ```
 
 **Umwege nach Nutzung**
 
-```{r, echo = F,  message = F, warning = F}
+```{r, echo = F, message = F}
 umwege_mean_nutzung <- data[ , grepl( "Umweg_" , names( data ) ) | (names(data) == "Nutzung")] %>% 
   filter(!is.na(Nutzung)) %>% 
   group_by(Nutzung) %>% 
   summarise(across(everything(), mean)) %>%
   pivot_longer(-Nutzung)
 
+umwege_mean_nutzung %>% 
+  bar_chart(name, value, bar_color  = cr_orange, facet = Nutzung) +
+  labs(title = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
+  ylab("Bereitschaft für Umwege in Minuten") +
+  xlab("") +
+  theme_grey(base_size = 7.5)
+```
+
+
+```{r, echo = F,  message = F, warning = F}
 sorted_nutzung_order <- arrange(umwege_mean, desc(mean)) %>% pull(name)
 
 for(umweg in sorted_umwege_order) {
@@ -283,18 +418,31 @@ for(umweg in sorted_umwege_order) {
 ```
 
 
-**Umweg für Steigung mit und ohne E-Antrieb**
-
-```{r, echo = F, message = F}
-data %>% 
-  mutate(Eantrieb = ifelse(Eantrieb == 0, "nein", "ja")) %>% 
-  group_by(Fahrradtyp, Eantrieb) %>% 
-  summarize("durchschnittlicher Umweg in Minuten" = mean(Umweg_Steigung), Anzahl = n()) 
-```
-
 **Häufigkeit von Hindernissen**
 
-```{r, echo = F}
+Wie häufig treten welche Hindernisse auf einer Skala von 1: sehr selten bis 5: sehr häufig auf?
+
+Da die meisten Antworten aus Berlin kommen, kann hier die Gesamtübersicht nicht global betrachtet werden. Stattdessen sollte jede Stadt für sich betrachtet werden.
+
+Schmale Radwege, unebener Belag, gefährliche Kreuzungen und Hauptstraßen ohne Schutzstreifen oder Radweg gibt es in einigen Städten. In Stuttgart sind zusätzlich besonders Steigung, Bordsteine und enge Straßen häufig zu finden.
+
+```{r, echo = F, message = F}
+umwege_mean_nutzung <- data[ , grepl( "Umweg_" , names( data ) ) | (names(data) == "Nutzung")] %>% 
+  filter(!is.na(Nutzung)) %>% 
+  group_by(Nutzung) %>% 
+  summarise(across(everything(), mean)) %>%
+  pivot_longer(-Nutzung)
+
+umwege_mean_nutzung %>% 
+  bar_chart(name, value, bar_color  = cr_orange, facet = Nutzung) +
+  labs(title = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
+  ylab("Bereitschaft für Umwege in Minuten") +
+  xlab("") +
+  theme_grey(base_size = 7.5)
+```
+
+
+```{r, echo = F, eval = F}
 freq_mean <- data[ , grepl( "Freq_" , names( data ) )] %>% 
   summarise(across(everything(), mean)) %>% 
   tibble::rownames_to_column() %>%  
@@ -306,8 +454,18 @@ freq_mean %>%
   bar_chart(name, mean, bar_color  = cr_orange) +
   ylab("Häufigkeit der Hindernisse") +
   xlab("") +
+  scale_y_continuous(limits = c(1,5), oob = scales::squish, breaks = c(1,2,3,4,5)) +
   theme_grey(base_size = 12)
 ```
+
+```{r, eval = F, echo = F}
+data[ , grepl( "Freq" , names( data ) ) | (names(data) == "Stadt")] %>% 
+  filter(Stadt != "Sonstige") %>% 
+  group_by(Stadt) %>% 
+  summarise(across(everything(), mean)) %>% 
+  summary()
+```
+
 
 ```{r, echo = F, message = F}
 freq_mean_stadt <- data[ , grepl( "Freq" , names( data ) ) | (names(data) == "Stadt")] %>% 
@@ -325,7 +483,7 @@ for(freq in sorted_freq_order) {
               subtitle = "von 1: sehr selten bis 5 sehr häufig") +
          xlab("") +
          ylab("Häufigkeit") +
-         scale_y_continuous(limits = c(0,5.5)) +
+         scale_y_continuous(limits = c(1,5), oob = scales::squish, breaks = c(1,2,3,4,5,6)) +
         theme_grey(base_size = 10)
   )
 }

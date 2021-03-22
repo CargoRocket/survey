@@ -1,3 +1,7 @@
+# Daten einlesen, E-Mail Adressen, Datum und IP Adresse löschen. Anonymisierten Datensatz speichern und ursprünglichen Datensatz löschen.
+# Umbenennen von Variablennamen und aufbereiten der Daten.
+
+
 if(file.exists(here("data", "responses.csv"))){
   data <- read_csv(file.path("data", "responses.csv"))
   emails <- data[!is.na(data$`deine E-Mail Adresse`), "deine E-Mail Adresse"]
@@ -67,7 +71,7 @@ data <- data_raw %>%
   mutate(Typ_all = ifelse(Typ_all == "Zu gleichen Teilen A und F", "Anhänger", Typ_all)) %>% 
   mutate(Nutzung = ifelse(Nutzung == "privater Transport von Einkäufen / Gegenständen / Haustieren", "privater Transport Gegenstände", Nutzung)) %>% 
   mutate(Nutzung = ifelse(Nutzung == "gewerbliche Nutzung  (z.B. Lieferdienst)", "gewerbliche Nutzung", Nutzung)) %>% 
-  mutate(Stadt = stringr::str_to_title(Stadt)) %>% 
+  mutate(Stadt = str_to_title(Stadt)) %>% 
   mutate(Stadt = ifelse(Stadt == "Frankfurt/M.", "Frankfurt Am Main", Stadt)) %>% 
   mutate(Stadt = ifelse(Stadt == "Harburg/Hamburg", "Hamburg", Stadt)) %>% 
   mutate(Stadt = ifelse(Stadt == "Hamburg Und Unzu", "Hamburg", Stadt)) %>% 
@@ -79,9 +83,11 @@ stadt_kleiner_5 <- data %>%
   filter(n < 5) %>% 
   pull(Stadt)
 
-data <- data %>% 
-  mutate(Stadt = ifelse(Stadt %in% stadt_kleiner_5, "Sonstige", Stadt))
+routing_label <- get_label(data$Routing)
 
+data <- data %>% 
+  mutate(Stadt = ifelse(Stadt %in% stadt_kleiner_5, "Sonstige", Stadt)) %>% 
+  mutate(Routing = str_to_title(Routing))
 
 recode_umweg <- function(x) {
   return(recode(x, 
@@ -111,4 +117,5 @@ data$Umweg_Gegenverkehr <- recode_umweg(data$Umweg_Gegenverkehr)%>% as.numeric()
 data$Umweg_Fussgaengerzone <- recode_umweg(data$Umweg_Fussgaengerzone)%>% as.numeric()
 
 set_label(data[ , grepl( "Umweg_" , names( data ) ) ]) <- temp_labels
+set_label(data[, "Routing"]) <- routing_label
 
