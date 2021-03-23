@@ -39,6 +39,7 @@ library(sjlabelled)
 library(janitor)
 library(ggplot2)
 library(ggcharts)
+library(knitr)
 
 # colors
 cr_orange <- "#E76F51"
@@ -104,14 +105,16 @@ data %>%
 ```{r, echo = F, message = F}
 data %>% 
   tabyl(Fahrradtyp) %>% 
-  adorn_pct_formatting()
+  adorn_pct_formatting() %>% 
+  kable()
 ```
 
 ```{r, echo =F, eval = F}
 data %>% 
   filter(Typ_all != "Fahrrad") %>% 
   tabyl(Typ_all) %>% 
-  mutate(percent = round(percent, 3) * 100)
+  mutate(percent = round(percent, 3) * 100) %>% 
+  kable()
 ```
 
 ```{r, echo = F, message = F}
@@ -135,7 +138,8 @@ data %>%
   filter(Typ_all != "Fahrrad") %>% 
   tabyl(Nutzung, Typ_all) %>% 
   adorn_percentages(denominator="col") %>% 
-  adorn_pct_formatting()
+  adorn_pct_formatting() %>% 
+  kable()
 ```
 
 Während 60% der Frauen unserer Stichprobe das Lastenrad hauptsächlich zum Transport von Kindern nutzen, verteilt es sich bei Männern zu 42% auf gewerbliche Nutzung, 33% Transport von Gegenständen und 25% Transport von Kindern.
@@ -149,7 +153,7 @@ nutzung_geschlecht <- data %>%
   tabyl(Nutzung, Geschlecht) %>% 
   filter(männlich + weiblich > 5)
 
-nutzung_geschlecht
+  kable(nutzung_geschlecht)
 ```
 
 ```{r, echo = F, message = F}
@@ -157,7 +161,8 @@ nutzung_geschlecht
 nutzung_geschlecht %>% 
   adorn_percentages() %>%
   adorn_percentages(denominator = "col") %>% 
-  adorn_pct_formatting() 
+  adorn_pct_formatting() %>% 
+  kable()
 ```
 
 **Häufigkeit unbekannter Routen & Routing**
@@ -168,7 +173,8 @@ Wie erwartet werden für gewerbliche Nutzung deutlich häufiger unbekannte Route
 ```{r, echo = F, eval = F, message = F}
 data %>% 
   group_by(Nutzung) %>% 
-  summarize("Mittelwert unbekannte Routen" = mean(Haeufigkeit_unbekannte_Routen), Median = median(Haeufigkeit_unbekannte_Routen))
+  summarize("Mittelwert unbekannte Routen" = mean(Haeufigkeit_unbekannte_Routen), Median = median(Haeufigkeit_unbekannte_Routen)) %>% 
+  knitr::kable()
 ```
 
 ```{r, eval = F, echo = F}
@@ -178,7 +184,8 @@ data %>%
   tabyl(Haeufigkeit_unbekannte_Routen, 
         Nutzung) %>% 
   adorn_percentages("col") %>% 
-  adorn_pct_formatting()
+  adorn_pct_formatting() %>% 
+  kable()
 ```
 
 
@@ -349,7 +356,7 @@ Der genaue Wortlaut der einzelnen Items:
 ```{r, echo = F, message = F}
 # print labels
 cbind(Variablenname = umwege_mean$name, Frage = get_label(data[ , grepl( "Umweg_" , names( data ) )])) %>% 
-  as_tibble()
+  as_tibble() %>% kable()
 ```
 
 **Einschätzung insgesamt**
@@ -379,7 +386,7 @@ umwege_mean_typ <- data[ , grepl( "Umweg_" , names( data ) ) | (names(data) == "
 umwege_mean_typ %>% 
   group_by(Typ_all) %>% 
   summarize("Mittelwert Umwege gesamt" = mean(value)) %>% 
-  arrange(desc(`Mittelwert Umwege gesamt`))
+  arrange(desc(`Mittelwert Umwege gesamt`)) %>% kable()
 ```
 
 Während für alle Fahrradtypen die Bereitschaft zur Umfahrung von Auto- und Fußverkehr groß ist, sind vor allem für Schwerlasträder Poller ein Problem. Der nicht vorhandene Schutzstreifen ist für mehrspurige Frontloader das Hindernis, das am weitesten umfahren werden würde und hängt höchstwahrscheinlich mit der starken Nutzung für Kindertransporte zusammen.
@@ -394,7 +401,7 @@ Steigung ist interessanterweise für keines der Fahrradtypen eine große Hürde 
 
 **Umwege nach Fahrrad-Typ**
 
-```{r, echo = F, message = F, fig.width= 10}
+```{r, echo = F, message = F, fig.width= 10, fig.height=8}
 umwege_mean_typ %>% 
   bar_chart(name, value, bar_color  = cr_orange, facet = Typ_all) +
   labs(title = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
@@ -425,7 +432,8 @@ for(umweg in sorted_umwege_order) {
 data %>% 
   mutate(Eantrieb = ifelse(Eantrieb == 0, "nein", "ja")) %>% 
   group_by(Fahrradtyp, Eantrieb) %>% 
-  summarize("durchschnittlicher Umweg in Minuten" = mean(Umweg_Steigung), Anzahl = n()) 
+  summarize("durchschnittlicher Umweg in Minuten" = mean(Umweg_Steigung), Anzahl = n()) %>% 
+  kable()
 ```
 
 
@@ -499,7 +507,8 @@ cbind(Hindernis = "Abstellmöglichkeit", Anzahl = nrow(data[grepl("abstell", dat
   rbind(cbind("Ampelphasen", nrow( data[grepl("ampelphasen", data$sonstige_Hindernisse),]))) %>% 
   as.data.frame() %>% 
   mutate(Anzahl = as.numeric(Anzahl)) %>% 
-  arrange(desc(Anzahl))
+  arrange(desc(Anzahl)) %>% 
+  kable()
 
 ```
 
