@@ -12,7 +12,9 @@ if(file.exists(here("data", "responses.csv"))){
   unlink(file.path("data", "responses.csv"))
   
   # TODO: anonymisieren für Open Data
-  # Stadt nur > 5 Antworten
+  # Stadt nur > 10 Antworten
+  # Alter in Gruppen clustern
+  # wegen kleiner FalLzahl nicht-binäre Angabe auf "keine Angabe" setzen
   # Other löschen
   # Freies Textfeld löschen?
 }
@@ -87,7 +89,8 @@ routing_label <- get_label(data$Routing)
 
 data <- data %>% 
   mutate(Stadt = ifelse(Stadt %in% stadt_kleiner_5, "Sonstige", Stadt)) %>% 
-  mutate(Routing = str_to_title(Routing))
+  mutate(Routing = str_to_title(Routing)) %>% 
+  mutate(sonstige_Hindernisse = str_to_lower(sonstige_Hindernisse))
 
 recode_umweg <- function(x) {
   return(recode(x, 
@@ -118,4 +121,5 @@ data$Umweg_Fussgaengerzone <- recode_umweg(data$Umweg_Fussgaengerzone)%>% as.num
 
 set_label(data[ , grepl( "Umweg_" , names( data ) ) ]) <- temp_labels
 set_label(data[, "Routing"]) <- routing_label
+
 
