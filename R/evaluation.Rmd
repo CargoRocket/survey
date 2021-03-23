@@ -9,7 +9,7 @@ output:
 
 Vom 8.März bis 23. März 2021 haben wir in einer Online-Befragung Lastenrad- und Fahrradfahrer\*innen nach Hindernissen im Straßenverkehr gefragt. Für welche Hindernisse würden große Umwege in Kauf genommen werden und wie häufig kommen diese Hindernisse in der eigenen Stadt vor?
 
-Der Fragebogen mit Fragen und Antwortmöglichkeiten ist [hier](https://cargorocket.github.io/survey/docs/questionaire.html) zu sehen und kann [hier](https://github.com/CargoRocket/survey/blob/main/codebuch.xlsx) auch als Excel, bzw [hier](https://github.com/CargoRocket/survey/blob/main/codebuch.csv) als csv heruntergeladen werden.
+Der Fragebogen mit Fragen und Antwortmöglichkeiten ist [hier](https://cargorocket.github.io/survey/docs/questionaire) zu sehen und kann [hier](https://github.com/CargoRocket/survey/blob/main/codebuch.xlsx) auch als Excel, bzw [hier](https://github.com/CargoRocket/survey/blob/main/codebuch.csv) als csv heruntergeladen werden.
 
 [Hier kann das Script dieser Auswertung](https://github.com/CargoRocket/survey/R/evaluation.Rmd) nachvollzogen werden.
 

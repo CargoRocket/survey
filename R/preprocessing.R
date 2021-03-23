@@ -19,7 +19,7 @@ if(file.exists(here("data", "responses.csv"))){
   # Freies Textfeld löschen?
 }
 
-data_raw <- read_csv(file.path("data", "data_raw.csv"))
+data_raw <- read_csv(here("data", "data_raw.csv"))
 
 set_label(data_raw) <- colnames(data_raw)
 
