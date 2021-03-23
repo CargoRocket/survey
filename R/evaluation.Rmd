@@ -370,10 +370,11 @@ umwege_mean %>%
   bar_chart(name, mean, bar_color  = cr_orange) +
   labs(title = "Umwege für Hindernisse",
        subtitle = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
-  ylab("Bereitschaft für Umwege [min]") +
+  ylab("durchschnittl. Bereitschaft für Umwege [min]") +
   xlab("") +
   theme_grey(base_size = 12)
 ```
+
 **Unterscheidung nach Fahrradtyp**
 
 Wie erwartet sind mehrspurige Lastenräder zu den größten Umwegen bereit.
@@ -407,17 +408,17 @@ Steigung ist interessanterweise für keines der Fahrradtypen eine große Hürde 
 
 **Umwege nach Fahrrad-Typ**
 
-```{r, echo = F, message = F, fig.width= 8, fig.height=11}
+```{r, echo = F, message = F, fig.width= 9, fig.height=11}
 umwege_mean_typ %>% 
   bar_chart(name, value, bar_color  = cr_orange, facet = Typ_all) +
   labs(title = "Umwege für Hindernisse",
        subtitle = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
-  ylab("Bereitschaft für Umwege in Minuten") +
+  ylab("durchschnittl. Bereitschaft für Umwege [min]") +
   xlab("") +
   theme_grey(base_size = 12)
 ```
 
-```{r, echo = F, warning=F, message = F, fig.height=3, fig.width=7}
+```{r, echo = F, warning=F, message = F, fig.height=3, fig.width=9}
 sorted_umwege_order <- arrange(umwege_mean, desc(mean)) %>% pull(name)
 
 for(umweg in sorted_umwege_order) {
@@ -425,7 +426,7 @@ for(umweg in sorted_umwege_order) {
           bar_color = c(cr_orange, grey, cr_green,  yellow, cr_orange_light)) +
          labs(title = get_label(data[,paste0("Umweg_", umweg)])) +
          xlab("") +
-         ylab("durchschnittliche Bereitschaft für Umwege [min]") +
+         ylab("durchschnittl. Bereitschaft für Umwege [min]") +
          scale_y_continuous(limits = c(0,7.5)) +
         theme_grey(base_size = 12)
   )
@@ -439,7 +440,7 @@ for(umweg in sorted_umwege_order) {
 data %>% 
   mutate(Eantrieb = ifelse(Eantrieb == 0, "nein", "ja")) %>% 
   group_by(Fahrradtyp, Eantrieb) %>% 
-  summarize("durchschnittlicher Umweg in Minuten" = mean(Umweg_Steigung), Anzahl = n()) %>% 
+  summarize("durchschnittl. Umweg in Minuten" = mean(Umweg_Steigung), Anzahl = n()) %>% 
   kable()
 ```
 
@@ -450,7 +451,7 @@ data[ , grepl( "Umweg_" , names( data ) ) ] %>%  summary()
 
 **Umwege nach Nutzung**
 
-```{r, echo = F, message = F, fig.width = 9, fig.height= 6}
+```{r, echo = F, message = F, fig.width = 10, fig.height= 6}
 umwege_mean_nutzung <- data[ , grepl( "Umweg_" , names( data ) ) | (names(data) == "Nutzung")] %>% 
   group_by(Nutzung) %>% 
   filter(!is.na(Nutzung)) %>% 
@@ -463,12 +464,12 @@ umwege_mean_nutzung %>%
   bar_chart(name, value, bar_color  = cr_orange, facet = Nutzung) +
   labs(title = "Umwege für Hindernisse",
        subtitle = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
-  ylab("Bereitschaft für Umwege [min]") +
+  ylab("durchschnittl. Bereitschaft für Umwege [min]") +
   xlab("") +
   theme_grey(base_size = 12)
 ```
 
-```{r, echo = F,  message = F, warning = F, fig.height=2, fig.width= 6}
+```{r, echo = F,  message = F, warning = F, fig.height=2, fig.width= 8}
 sorted_nutzung_order <- arrange(umwege_mean, desc(mean)) %>% pull(name)
 
 for(umweg in sorted_umwege_order) {
@@ -476,7 +477,7 @@ for(umweg in sorted_umwege_order) {
           bar_color = c(cr_orange, cr_green, cr_orange_light), horizontal = T) +
          labs(title = get_label(data[,paste0("Umweg_", umweg)])) +
          xlab("") +
-         ylab("durchschnittliche Bereitschaft für Umwege [min]") +
+         ylab("durchschnittl. Bereitschaft für Umwege [min]") +
          scale_y_continuous(limits = c(0,7.5)) +
         theme_grey(base_size = 12)
   )
