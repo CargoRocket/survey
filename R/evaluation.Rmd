@@ -361,13 +361,14 @@ cbind(Variablenname = umwege_mean$name, Frage = get_label(data[ , grepl( "Umweg_
 
 **Einschätzung insgesamt**
 
-```{r, echo = F, message = F, fig.width=9, fig.height=4}
+```{r, echo = F, message = F, fig.width=9, fig.height=8}
 umwege_mean %>% 
   bar_chart(name, mean, bar_color  = cr_orange) +
-  labs(title = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
+  labs(title = "Umwege für Hindernisse",
+       subtitle = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
   ylab("Bereitschaft für Umwege in Minuten") +
   xlab("") +
-  theme_grey(base_size = 12)
+  theme_grey(base_size = 14)
 ```
 **Unterscheidung nach Fahrradtyp**
 
@@ -401,13 +402,14 @@ Steigung ist interessanterweise für keines der Fahrradtypen eine große Hürde 
 
 **Umwege nach Fahrrad-Typ**
 
-```{r, echo = F, message = F, fig.width= 10, fig.height=8}
+```{r, echo = F, message = F, fig.width= 10, fig.height=10}
 umwege_mean_typ %>% 
   bar_chart(name, value, bar_color  = cr_orange, facet = Typ_all) +
-  labs(title = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
+  labs(title = "Umwege für Hindernisse",
+       subtitle = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
   ylab("Bereitschaft für Umwege in Minuten") +
   xlab("") +
-  theme_grey(base_size = 11)
+  theme_grey(base_size = 12)
 ```
 
 ```{r, echo = F, warning=F, message = F, fig.height=3, fig.width=7}
@@ -443,7 +445,7 @@ data[ , grepl( "Umweg_" , names( data ) ) ] %>%  summary()
 
 **Umwege nach Nutzung**
 
-```{r, echo = F, message = F, fig.width = 10, fig.height= 4}
+```{r, echo = F, message = F, fig.width = 10, fig.height= 5}
 umwege_mean_nutzung <- data[ , grepl( "Umweg_" , names( data ) ) | (names(data) == "Nutzung")] %>% 
   filter(!is.na(Nutzung)) %>% 
   group_by(Nutzung) %>% 
@@ -452,10 +454,11 @@ umwege_mean_nutzung <- data[ , grepl( "Umweg_" , names( data ) ) | (names(data) 
 
 umwege_mean_nutzung %>% 
   bar_chart(name, value, bar_color  = cr_orange, facet = Nutzung) +
-  labs(title = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
+  labs(title = "Umwege für Hindernisse",
+       subtitle = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
   ylab("Bereitschaft für Umwege in Minuten") +
   xlab("") +
-  theme_grey(base_size = 11)
+  theme_grey(base_size = 12)
 ```
 
 
@@ -532,6 +535,8 @@ freq_mean <- data[ , grepl( "Freq_" , names( data ) )] %>%
 
 freq_mean %>% 
   bar_chart(name, mean, bar_color  = cr_orange) +
+    labs(title = "Häufigkeit von Hindernissen",
+         subtitle = "von 1: sehr selten bis 5: sehr häufig")+
   ylab("Häufigkeit der Hindernisse") +
   xlab("") +
   scale_y_continuous(limits = c(1,5), oob = scales::squish, breaks = c(1,2,3,4,5)) +
@@ -560,7 +565,7 @@ for(freq in sorted_freq_order) {
   plot(bar_chart(filter(freq_mean_stadt, name == freq), Stadt, value, horizontal = T,
                            bar_color = c(rep(grey, 9), cr_orange, rep(grey, 1) ))+
          labs(title = get_label(data[,freq]),
-              subtitle = "von 1: sehr selten bis 5 sehr häufig") +
+              subtitle = "von 1: sehr selten bis 5: sehr häufig") +
          xlab("") +
          ylab("Häufigkeit") +
          scale_y_continuous(limits = c(1,5), oob = scales::squish, breaks = c(1,2,3,4,5,6)) +
