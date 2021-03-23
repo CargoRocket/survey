@@ -403,13 +403,13 @@ umwege_mean_typ %>%
   theme_grey(base_size = 8)
 ```
 
-```{r, echo = F, warning=F, message = F, fig.height=3}
+```{r, echo = F, warning=F, message = F, fig.height=3, fig.width=7}
 sorted_umwege_order <- arrange(umwege_mean, desc(mean)) %>% pull(name)
 
 for(umweg in sorted_umwege_order) {
   plot(bar_chart(filter(umwege_mean_typ, name == umweg), Typ_all, value,
           bar_color = c(cr_orange, grey, cr_green,  yellow, cr_orange_light)) +
-         labs(subtitle = get_label(data[,umweg])) +
+         labs(title = get_label(data[,umweg])) +
          xlab("") +
          ylab("durchschnittliche Bereitschaft für Umweg in Minuten") +
          scale_y_continuous(limits = c(0,7.5)) +
@@ -451,13 +451,13 @@ umwege_mean_nutzung %>%
 ```
 
 
-```{r, echo = F,  message = F, warning = F, fig.height=2, fig.width= 5}
+```{r, echo = F,  message = F, warning = F, fig.height=2, fig.width= 6}
 sorted_nutzung_order <- arrange(umwege_mean, desc(mean)) %>% pull(name)
 
 for(umweg in sorted_umwege_order) {
   plot(bar_chart(filter(umwege_mean_nutzung, name == umweg), Nutzung, value,
           bar_color = c(cr_orange, cr_green, cr_orange_light), horizontal = T) +
-         labs(subtitle = get_label(data[,umweg])) +
+         labs(title = get_label(data[,umweg])) +
          xlab("") +
          ylab("durchschnittliche Bereitschaft für Umweg in Minuten") +
          scale_y_continuous(limits = c(0,7.5)) +
