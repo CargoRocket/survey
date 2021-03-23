@@ -199,7 +199,7 @@ data %>%
                      limits = c(0.5,6.5)) +
   xlab("") +
   ylab("%")+
-    theme_grey(base_size = 8)
+    theme_grey(base_size = 12)
 ```
 
 **Zufriedenheit Infrastruktur**
@@ -212,7 +212,7 @@ Die Befragten in München sind am zufriedensten, Stuttgart landet auf dem vorlet
 data$Zufriedenheit_Infrastruktur %>% summary()
 ```
 
-```{r, echo = F, message = F}
+```{r, echo = F, message = F, fig.width=9, fig.height=4}
 data %>% 
   bar_chart(Zufriedenheit_Infrastruktur, sort = F, 
             bar_color = cr_orange, horizontal = F) + 
@@ -221,7 +221,7 @@ data %>%
   xlab("Zufriedenheit") +
   scale_x_continuous(breaks = c(1,2,3, 4, 5, 6),
                      limits = c(0.5,6.5)) +
-    theme_grey(base_size = 8)
+    theme_grey(base_size = 12)
 
 ```
 
@@ -232,7 +232,7 @@ data %>%
   summarise(Zufriedenheit = mean(Zufriedenheit_Infrastruktur)) %>% 
   bar_chart(Stadt, Zufriedenheit, bar_color = cr_orange) +
     scale_y_continuous(limits = c(1,6), oob = scales::squish, breaks = c(1,2,3,4,5,6)) +
-    theme_grey(base_size = 8)
+    theme_grey(base_size = 12)
 
 ```
 
@@ -283,7 +283,7 @@ data %>%
   geom_text(aes(label = percentage, hjust = -0.1)) +
   xlab("") +
   ylab("%")+
-    theme_grey(base_size = 8)
+    theme_grey(base_size = 12)
 ```
 
 Die Zufriedenheit mit den verschiedenen Routing Services ist im Mittel bei 3.5 und liegt damit genau in der Mitte zwischen unzufrieden und zufrieden.
@@ -354,13 +354,13 @@ cbind(Variablenname = umwege_mean$name, Frage = get_label(data[ , grepl( "Umweg_
 
 **Einschätzung insgesamt**
 
-```{r, echo = F, message = F}
+```{r, echo = F, message = F, fig.width=9, fig.height=4}
 umwege_mean %>% 
   bar_chart(name, mean, bar_color  = cr_orange) +
   labs(title = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
   ylab("Bereitschaft für Umwege in Minuten") +
   xlab("") +
-  theme_grey(base_size = 9)
+  theme_grey(base_size = 12)
 ```
 **Unterscheidung nach Fahrradtyp**
 
@@ -400,7 +400,7 @@ umwege_mean_typ %>%
   labs(title = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
   ylab("Bereitschaft für Umwege in Minuten") +
   xlab("") +
-  theme_grey(base_size = 8)
+  theme_grey(base_size = 11)
 ```
 
 ```{r, echo = F, warning=F, message = F, fig.height=3, fig.width=7}
@@ -447,7 +447,7 @@ umwege_mean_nutzung %>%
   labs(title = "Wie viele Minuten zur Umfahrung des Hindernisses würdest du max. in Kauf nehmen?")+
   ylab("Bereitschaft für Umwege in Minuten") +
   xlab("") +
-  theme_grey(base_size = 10)
+  theme_grey(base_size = 11)
 ```
 
 
@@ -538,7 +538,7 @@ data[ , grepl( "Freq" , names( data ) ) | (names(data) == "Stadt")] %>%
 ```
 
 
-```{r, echo = F, message = F, fig.height=3}
+```{r, echo = F, message = F, fig.height=3, fig.width = 8}
 freq_mean_stadt <- data[ , grepl( "Freq" , names( data ) ) | (names(data) == "Stadt")] %>% 
   filter(Stadt != "Sonstige") %>% 
   group_by(Stadt) %>% 
@@ -555,7 +555,7 @@ for(freq in sorted_freq_order) {
          xlab("") +
          ylab("Häufigkeit") +
          scale_y_continuous(limits = c(1,5), oob = scales::squish, breaks = c(1,2,3,4,5,6)) +
-        theme_grey(base_size = 10)
+        theme_grey(base_size = 12)
   )
 }
 ```
