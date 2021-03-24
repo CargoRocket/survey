@@ -87,7 +87,7 @@ data$Alter %>% summary()
 
 **Stadt**
 
-Die meisten Befragten stammen aus Berlin (131). Danach folgen Münster (18), Hamburg (15) und Stuttgart (11). Mindestens 5 Antworten kamen auch aus München, Kiel, Frankfurt a.M., Düsseldorf, Wien, Osnabrück und Bonn. 131 weitere Antworten stammen aus Orten mit weniger als 5 Angaben oder haben keine Angabe gemacht.
+Die meisten Befragten stammen aus Berlin (58). Danach folgen Münster (18), Hamburg (15) und Stuttgart (11). Mindestens 5 Antworten kamen auch aus München, Kiel, Frankfurt a.M., Düsseldorf, Wien, Osnabrück und Bonn. 136 weitere Antworten stammen aus Orten mit weniger als 5 Angaben oder haben keine Angabe gemacht.
 
 ```{r, echo = F, message = F}
 data %>% 
@@ -558,6 +558,7 @@ data[ , grepl( "Freq" , names( data ) ) | (names(data) == "Stadt")] %>%
   summary()
 ```
 
+Da unser Fokus im ersten Schritt auf Baden-Württemberg liegt, ist Stuttgart hervorgehoben dargestellt.
 
 ```{r, echo = F, message = F, fig.height=5, fig.width = 8}
 freq_mean_stadt <- data[ , grepl( "Freq" , names( data ) ) | (names(data) == "Stadt")] %>% 
