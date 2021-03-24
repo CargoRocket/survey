@@ -14,7 +14,6 @@
   table {
     margin-top: 3.0rem;
     margin-bottom: 3.0rem;
-    font-size: 1.2rem;
   }
   body {
     font-size: 1.5rem;
@@ -187,9 +186,10 @@ Wie zu erwarten werden Schwerlasträder hauptsächlich in der gewerblichen Nutzu
 
 ```{r, echo = F, message = F}
 data %>% 
-  filter(! Typ_all %in% c("Fahrrad", "Post bike (einspurig)")) %>% 
-  tabyl(Nutzung, Typ_all) %>% 
-  adorn_percentages(denominator="col") %>% 
+  filter(! Typ_all %in% c("Post bike (einspurig)")) %>% 
+  filter(!is.na(Nutzung)) %>% 
+  tabyl(Typ_all, Nutzung) %>% 
+  adorn_percentages(denominator="row") %>% 
   adorn_pct_formatting() %>% 
   kable()
 ```
