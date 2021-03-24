@@ -1,6 +1,6 @@
 # Auswertung der Umfrage zu Hindernissen im Straßenverkehr für Lastenräder
 
-**[Blog-Beitrag zur Auswertung](xxx)**
+**[Blog-Beitrag zur Auswertung](https://cargorocket.de/2021/03/23/survey.html)**
 
 Vom 8.März bis 23. März 2021 haben wir in einer Online-Befragung Lastenrad- und Fahrradfahrer\*innen nach Hindernissen im Straßenverkehr gefragt. Für welche Hindernisse würden große Umwege in Kauf genommen werden und wie häufig kommen diese Hindernisse in der eigenen Stadt vor?
 

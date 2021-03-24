@@ -162,6 +162,23 @@ data %>%
 
 ```
 
+### Nutzung
+
+"Wofür nutzt du das Lastenfahrrad hauptsächlich?"
+
+```{r, echo = F, message = F}
+data %>% 
+  filter(!is.na(Nutzung)) %>% 
+    tabyl(Nutzung) %>% 
+  mutate(percent = round(percent * 100, 1)) %>% 
+  bar_chart(Nutzung, y = percent, other = T, threshold = 1, bar_color = cr_orange) +
+  geom_text(aes(label = percent, hjust = -0.1)) +
+  xlab("Nutzungsgrund") +
+  ylab("%") +
+  scale_y_continuous(limits = c(0, 50)) +
+  theme_grey(base_size = 12)
+
+```
 
 Wie zu erwarten werden Schwerlasträder hauptsächlich in der gewerblichen Nutzung eingesetzt. Die Mehrspurigen Frontloader dienen zum Großteil (62%) dem Transport von Kindern während die einspurigen zwar auch für 42% für Kindertransport, aber häufiger (56%) für den Transport von Gegenständen oder für gewerbliche Nutzung zum Einsatz kommen.
 
@@ -174,7 +191,7 @@ data %>%
   kable()
 ```
 
-Während 60% der Frauen unserer Stichprobe das Lastenrad hauptsächlich zum Transport von Kindern nutzen, verteilt es sich bei Männern zu 42% auf gewerbliche Nutzung, 33% Transport von Gegenständen und 25% Transport von Kindern.
+Während 60% der Frauen unserer Stichprobe das Lastenrad hauptsächlich zum Transport von Kindern nutzen, verteilt es sich bei Männern zu 16% auf gewerbliche Nutzung, 47% Transport von Gegenständen und 37% Transport von Kindern.
 *(Nicht-binäre Personen werden aufgrund der geringen Fallzahl nicht ausgewertet für Geschlechtsbetrachtungen.)*
 
 ```{r, echo = F, message = F}
@@ -191,7 +208,6 @@ nutzung_geschlecht <- data %>%
 ```{r, echo = F, message = F}
 # Prozent je Geschlecht
 nutzung_geschlecht %>% 
-  adorn_percentages() %>%
   adorn_percentages(denominator = "col") %>% 
   adorn_pct_formatting() %>% 
   kable()
