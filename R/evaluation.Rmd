@@ -3,15 +3,18 @@
   output: html_document
 ---
 
-<style type="text/css">
+```{css, echo=FALSE}
   li {
     margin: 1rem;
   }
     img {
-    margin: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
   }
   table {
-    margin: 3.0rem;
+    margin-top: 3.0rem;
+    margin-bottom: 3.0rem;
+    font-size: 1.2rem;
   }
   body {
     font-size: 1.5rem;
@@ -31,7 +34,7 @@
       font-size: 2.0rem;
       margin-top: 2.5rem;
   }
-</style>
+```
 
 ```{r message = FALSE, echo = F}
 # imports
@@ -184,7 +187,7 @@ Wie zu erwarten werden Schwerlasträder hauptsächlich in der gewerblichen Nutzu
 
 ```{r, echo = F, message = F}
 data %>% 
-  filter(Typ_all != "Fahrrad") %>% 
+  filter(! Typ_all %in% c("Fahrrad", "Post bike (einspurig)")) %>% 
   tabyl(Nutzung, Typ_all) %>% 
   adorn_percentages(denominator="col") %>% 
   adorn_pct_formatting() %>% 
