@@ -1,9 +1,65 @@
 ---
-output:
-  html_document
+  title: "Auswertung der Online-Umfrage: Hindernisse für Lastenräder im Straßenverkehr"
+  output: html_document
 ---
 
-# Auswertung der Umfrage zu Hindernissen im Straßenverkehr für Lastenräder
+<style type="text/css">
+  li {
+    margin: 1rem;
+  }
+    img {
+    margin: 1.5rem;
+  }
+  table {
+    margin: 3.0rem;
+  }
+  body {
+    font-size: 1.5rem;
+  }
+
+  h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1.2rem;
+  }
+
+  h2 {
+      font-size: 2.3rem;
+      margin-top: 3rem;
+
+  }
+  h3 {
+      font-size: 2.0rem;
+      margin-top: 2.5rem;
+  }
+</style>
+
+```{r message = FALSE, echo = F}
+# imports
+library(readr)
+library(here)
+library(tidyr)
+library(stringr)
+library(dplyr)
+library(sjlabelled)
+library(janitor)
+library(ggplot2)
+library(ggcharts)
+library(knitr)
+library(gfonts)
+
+# colors
+cr_orange <- "#E76F51"
+cr_green <- "#479E8F"
+cr_orange_light <- "#F1A261"
+grey <- "#d0d3d4"
+yellow <- "#f4d03f"
+```
+
+
+```{r, echo = F}
+use_font("roboto", here("docs","css", "roboto.css"))
+```
+
 
 Vom 8.März bis 23. März 2021 haben wir in einer Online-Befragung Lastenrad- und Fahrradfahrer\*innen nach Hindernissen im Straßenverkehr gefragt. Für welche Hindernisse würden große Umwege in Kauf genommen werden und wie häufig kommen diese Hindernisse in der eigenen Stadt vor?
 
@@ -28,37 +84,13 @@ Der Fragebogen mit Fragen und Antwortmöglichkeiten ist [hier](https://cargorock
 - Hindernisse sind je nach Stadt unterschiedlich häufig verbreitet. Schmale Radwege, unebener Belag, gefährliche Kreuzungen und Hauptstraßen ohne Schutzstreifen oder Radweg kommen in vielen Städten häufig vor. 
 
 
-```{r message = FALSE, echo = F}
-# imports
-library(readr)
-library(here)
-library(tidyr)
-library(stringr)
-library(dplyr)
-library(sjlabelled)
-library(janitor)
-library(ggplot2)
-library(ggcharts)
-library(knitr)
-
-# colors
-cr_orange <- "#E76F51"
-cr_green <- "#479E8F"
-cr_orange_light <- "#F1A261"
-grey <- "#d0d3d4"
-yellow <- "#f4d03f"
-```
 
 ```{r message = F, echo=F, include=F}
 ## Datensatz anonymisieren & aufbereiten
 source(here("R", "preprocessing.R"))
 ```
 
-## Detaillierte Analyse
-
-Die Auswertung der Fragen im Detail:
-
-### Stichprobe
+## Stichprobe
 
 Es haben 282 Personen an der Umfrage teilgenommen (68% männlich, 28% weiblich, <1% nicht-binär, 3% keine Angabe).
 Im Mittel waren die Befragten 39,5 Jahre alt (38 im Median), in einer Range von 20 bis 68 Jahren.
@@ -85,7 +117,7 @@ data$Alter %>% summary()
   hist(data$Alter, main = "Histogram Alter", xlab = "Alter", ylab = "Häufigkeit", border = "white")
 ```
 
-**Stadt**
+### Stadt
 
 Die meisten Befragten stammen aus Berlin (58). Danach folgen Münster (18), Hamburg (15) und Stuttgart (11). Mindestens 5 Antworten kamen auch aus München, Kiel, Frankfurt a.M., Düsseldorf, Wien, Osnabrück und Bonn. 136 weitere Antworten stammen aus Orten mit weniger als 5 Angaben oder haben keine Angabe gemacht.
 
@@ -97,7 +129,7 @@ data %>%
 ```
 
 
-**Fahrradtyp**
+### Fahrradtyp
 
 75% der Befragten sind Lastenradfahrer*innen und 25% fahren normales Fahrrad. Der einspurige Frontloader ist in dieser Stichprobe das häufigste Lastenrad (65%, n = 136), danach folgt der mehrspurige Frontloader (22%, n = 47), Schwerlast (6%, n = 12), Longtail (3%, n = 6) und Anhänger (3%, n = 7) und Post bike (1%, n = 2).
 
@@ -165,7 +197,7 @@ nutzung_geschlecht %>%
   kable()
 ```
 
-**Häufigkeit unbekannter Routen & Routing**
+### Häufigkeit unbekannter Routen
 
 Wie erwartet werden für gewerbliche Nutzung deutlich häufiger unbekannte Routen gefahren: 38% der Fahrer\*innen geben (sehr) häufig unkeannte Routen zu fahren (5 oder 6 auf der Skala). Bei privatem Transport von Gegenständen sind dies nur 18% und bei Transport von Kindern 10%. 
 2 Personen - damit 12% der gewerblich Fahrenden - geben auch an nur sehr selten (1 auf der Skala) unbekannte Routen zu fahren. In der privaten Nutzung sind dies nur 4% bzw. 0%. 
@@ -209,14 +241,16 @@ data %>%
     theme_grey(base_size = 12)
 ```
 
-**Zufriedenheit Infrastruktur**
+### Zufriedenheit Infrastruktur
 
 Auf einer Skala von 1 (sehr unzufrieden) - 6 (sehr zufrieden) ist die Zufriedenheit mit der Infrastruktur im Schnitt bei 2.5. 
 Niemand der Befragten ist "sehr zufrieden".
 Die Befragten in München sind am zufriedensten, Stuttgart landet auf dem vorletzten Platz. **Diese Vergleiche sind jedoch nur bedingt aussagekräftig, da für die meisten Städte nur sehr kleine Stichprobenzahlen (< 10) vorliegen.**
 
 ```{r, echo = F, message = F}
-data$Zufriedenheit_Infrastruktur %>% summary()
+data %>% 
+  summarise(`Mittelwert Zufriedenheit Infrastruktur`= mean(Zufriedenheit_Infrastruktur), `Median Zufriedenheit Infrastruktur` = median(Zufriedenheit_Infrastruktur)) %>% 
+  kable()
 ```
 
 ```{r, echo = F, message = F, fig.width=9, fig.height=4}
@@ -225,7 +259,7 @@ data %>%
             bar_color = cr_orange, horizontal = F) + 
   labs(title = get_label(data$Zufriedenheit_Infrastruktur),
        subtitle = "1:sehr unzufrieden - 6: sehr zufrieden") +
-  xlab("Zufriedenheit") +
+  xlab("durchschnittl. Zufriedenheit") +
   scale_x_continuous(breaks = c(1,2,3, 4, 5, 6),
                      limits = c(0.5,6.5)) +
     theme_grey(base_size = 12)
@@ -239,12 +273,13 @@ data %>%
   summarise(Zufriedenheit = mean(Zufriedenheit_Infrastruktur)) %>% 
   bar_chart(Stadt, Zufriedenheit, bar_color = cr_orange) +
     scale_y_continuous(limits = c(1,6), oob = scales::squish, breaks = c(1,2,3,4,5,6)) +
-    theme_grey(base_size = 12)
+    theme_grey(base_size = 12) +
+    ylab("durchschnittl. Zufriedenheit")
 
 ```
 
 
-**Routing**
+### Routing
 
 Fast 30% der Befragten nutzt Google Maps als Routing. An zweiter Stelle steht Komoot mit 21% und OpenStreetMap mit 9% auf Platz 3.
 
@@ -271,7 +306,7 @@ data %>%
   mutate(percent = round(percent * 100, 0)) %>% 
   bar_chart(Routing, percent, threshold = 5, bar_color = cr_orange) +
     theme_grey(base_size = 12) +
-    ylab("in %") +
+    ylab("%") +
     geom_text(aes(label = percent, hjust = -0.1))
 ```
 
@@ -300,7 +335,9 @@ Die Zufriedenheit mit den verschiedenen Routing Services ist im Mittel bei 3.5 u
 Während die Zufriedenheit mit Google Maps am geringsten ist, scheinen kleinere Anbieter (zusammengefasst unter "Sonstiges") am besten abzuschneiden.
 
 ```{r, echo = F, message = F}
-data$Zufriedenheit_Routing %>% summary()
+data %>% 
+  summarise(`Mittelwert Zufriedenheit Routing`= mean(Zufriedenheit_Routing, na.rm = T), `Median Zufriedenheit Routing` = median(Zufriedenheit_Routing, na.rm =T)) %>% 
+  kable()
 ```
 
 ```{r, echo = F, message = F}
@@ -308,8 +345,8 @@ data %>%
   filter(!is.na(Zufriedenheit_Routing)) %>% 
   mutate(Routing = ifelse(Routing %in% c("Google Maps", "Ich Nutze Kein Routing", "Komoot", "Openstreetmap", "Bike Citizens"), Routing, "Sonstiges")) %>% 
   group_by(Routing) %>% 
-  summarize("Mittelwert Zufriedenheit Routing" = mean(Zufriedenheit_Routing)) %>% 
-  bar_chart(Routing, `Mittelwert Zufriedenheit Routing`, bar_color = cr_orange)+
+  summarize("durchschnittl. Zufriedenheit Routing" = mean(Zufriedenheit_Routing)) %>% 
+  bar_chart(Routing, `durchschnittl. Zufriedenheit Routing`, bar_color = cr_orange)+
     labs(title = get_label(data$Zufriedenheit_Routing),
        subtitle = "1:sehr unzufrieden - 6: sehr zufrieden") +
     xlab("Zufriedenheit") +
@@ -317,7 +354,7 @@ data %>%
     theme_grey(base_size = 12)
 ```
 
-### Bereitschaft für Umwege
+## Bereitschaft für Umwege
 
 Insgesamt scheint die Bereitschaft Umwege in Kauf zu nehmen vor allem gegeben, um Autos und Fußgängern auszuweichen. So landen auf den ersten vier Plätzen:
 Umwege in Fußgängerzonen (Absteigen notwendig), Hauptstraßen ohne Schutzstreifen, Stau durch Autoverkehr und geteilter Weg mit Fußgänger\*innen.
@@ -363,7 +400,7 @@ cbind(Variablenname = umwege_mean$name, Frage = get_label(data[ , grepl( "Umweg_
   as_tibble() %>% kable()
 ```
 
-**Einschätzung insgesamt**
+### Einschätzung insgesamt
 
 ```{r, echo = F, message = F, fig.width=8, fig.height=8}
 umwege_mean %>% 
@@ -375,7 +412,7 @@ umwege_mean %>%
   theme_grey(base_size = 12)
 ```
 
-**Unterscheidung nach Fahrradtyp**
+### Unterscheidung nach Fahrrad-Typ
 
 Wie erwartet sind mehrspurige Lastenräder zu den größten Umwegen bereit.
 Dann folgen Anhänger, einspurige Lastenräder. Normale Fahrräder sind zu den geringsten Umwegen bereit - jedoch unterscheiden sie sich nur minimal von den einspurigen Frontloadern.
@@ -406,8 +443,6 @@ Für schmale Radwege wird von keinem der Fahrradtypen ein großer Umweg in Kauf 
 
 Steigung ist interessanterweise für keines der Fahrradtypen eine große Hürde - selbst ohne Elektroantrieb. 
 
-**Umwege nach Fahrrad-Typ**
-
 ```{r, echo = F, message = F, fig.width= 9, fig.height=11}
 umwege_mean_typ %>% 
   bar_chart(name, value, bar_color  = cr_orange, facet = Typ_all) +
@@ -434,7 +469,7 @@ for(umweg in sorted_umwege_order) {
 ```
 
 
-**Umweg für Steigung mit und ohne E-Antrieb**
+### Umweg für Steigung mit und ohne E-Antrieb
 
 ```{r, echo = F, message = F}
 data %>% 
@@ -449,7 +484,7 @@ data %>%
 data[ , grepl( "Umweg_" , names( data ) ) ] %>%  summary()
 ```
 
-**Umwege nach Nutzung**
+### Unterscheidung nach Nutzung
 
 ```{r, echo = F, message = F, fig.width = 10, fig.height= 6}
 umwege_mean_nutzung <- data[ , grepl( "Umweg_" , names( data ) ) | (names(data) == "Nutzung")] %>% 
@@ -497,7 +532,7 @@ cbind(Hindernis = "Abstellmöglichkeit", Anzahl = nrow(data[grepl("abstell", dat
   rbind(cbind("Treppen", nrow(data[grepl("treppen", data$sonstige_Hindernisse) | grepl("stufen", data$sonstige_Hindernisse),]))) %>% 
   rbind(cbind("nicht geräumte Radwege", nrow(data[grepl("schnee", data$sonstige_Hindernisse),]))) %>% 
   rbind(cbind("enge Kurven", nrow(data[grepl("kurve", data$sonstige_Hindernisse) | grepl("enge verschwenkungen", data$sonstige_Hindernisse),]))) %>% 
-  rbind(cbind("Schräglage der Fahrbahn (besonders für mehrspurige)", nrow(data[grepl("schräg", data$sonstige_Hindernisse) | grepl("schiefe", data$sonstige_Hindernisse) | 
+  rbind(cbind("Schräglage der Fahrbahn (besonders für mehrspurige Lastenräder)", nrow(data[grepl("schräg", data$sonstige_Hindernisse) | grepl("schiefe", data$sonstige_Hindernisse) | 
                                         grepl("niedriger", data$sonstige_Hindernisse) | grepl("neigungen", data$sonstige_Hindernisse),]))) %>% 
   rbind(cbind("zweiseitige Radwege zu schmal", nrow(data[grepl("gegenverkehr", data$sonstige_Hindernisse) | 
                                                            grepl("zwei-richtung", data$sonstige_Hindernisse),]))) %>% 
@@ -544,7 +579,7 @@ freq_mean %>%
   bar_chart(name, mean, bar_color  = cr_orange) +
     labs(title = "Häufigkeit von Hindernissen",
          subtitle = "von 1: sehr selten bis 5: sehr häufig")+
-  ylab("mittlere Häufigkeit") +
+  ylab("durschnittl. Bewertung der Häufigkeit") +
   xlab("") +
   scale_y_continuous(limits = c(1,5), oob = scales::squish, breaks = c(1,2,3,4,5)) +
   theme_grey(base_size = 12)
@@ -557,6 +592,8 @@ data[ , grepl( "Freq" , names( data ) ) | (names(data) == "Stadt")] %>%
   summarise(across(everything(), mean)) %>% 
   summary()
 ```
+
+### Unterscheidung nach Städten
 
 Da unser Fokus im ersten Schritt auf Baden-Württemberg liegt, ist Stuttgart hervorgehoben dargestellt.
 
@@ -575,10 +612,11 @@ for(freq in sorted_freq_order) {
         labs(title = get_label(data[,freq]),
               subtitle = "von 1: sehr selten bis 5: sehr häufig") +
         xlab("") +
-        ylab("mittlere Häufigkeit") +
+        ylab("durschnittl. Bewertung der Häufigkeit") +
         scale_y_continuous(limits = c(1,5), oob = scales::squish, breaks = c(1,2,3,4,5,6)) +
         theme_grey(base_size = 12)
   )
 }
 ```
+
 
